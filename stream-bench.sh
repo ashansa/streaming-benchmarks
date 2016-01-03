@@ -17,13 +17,13 @@ SCALA_BIN_VERSION=${SCALA_BIN_VERSION:-"2.10"}
 SCALA_SUB_VERSION=${SCALA_SUB_VERSION:-"4"}
 STORM_VERSION=${STORM_VERSION:-"0.10.0"}
 FLINK_VERSION=${FLINK_VERSION:-"0.10.1"}
-SPARK_VERSION=${SPARK_VERSION:-"1.5.1"}
+SPARK_VERSION=${SPARK_VERSION:-"1.5.2"}
 
 STORM_DIR="apache-storm-$STORM_VERSION"
 REDIS_DIR="redis-$REDIS_VERSION"
 KAFKA_DIR="kafka_$SCALA_BIN_VERSION-$KAFKA_VERSION"
-FLINK_DIR="flink-$FLINK_VERSION"
-SPARK_DIR="spark-$SPARK_VERSION-bin-hadoop2.6"
+FLINK_DIR="/usr/local/flink"
+SPARK_DIR="/srv/spark"
 
 ZK_HOST="localhost"
 ZK_PORT="2181"
@@ -116,7 +116,7 @@ run() {
 	echo 'kafka.topic: "'$TOPIC'"' >> $CONF_FILE
 	echo 'kafka.partitions: '$PARTITIONS >> $CONF_FILE
 	echo 'process.hosts: 1' >> $CONF_FILE
-	echo 'process.cores: 4' >> $CONF_FILE
+	echo 'process.cores: 2' >> $CONF_FILE
 	echo 'storm.workers: 1' >> $CONF_FILE
 	echo 'storm.ackers: 2' >> $CONF_FILE
 	echo 'spark.batchtime: 2000' >> $CONF_FILE
@@ -140,12 +140,12 @@ run() {
     fetch_untar_file "$STORM_FILE" "http://www.interior-dsgn.com/apache/storm/$STORM_DIR/$STORM_FILE"
 
     #Fetch Flink
-    FLINK_FILE="$FLINK_DIR-bin-hadoop27-scala_${SCALA_BIN_VERSION}.tgz"
-    fetch_untar_file "$FLINK_FILE" "http://apache.mirrorcatalogs.com/flink/flink-$FLINK_VERSION/$FLINK_FILE"
+    #FLINK_FILE="$FLINK_DIR-bin-hadoop27-scala_${SCALA_BIN_VERSION}.tgz"
+    #fetch_untar_file "$FLINK_FILE" "http://apache.mirrorcatalogs.com/flink/flink-$FLINK_VERSION/$FLINK_FILE"
 
     #Fetch Spark
-    SPARK_FILE="$SPARK_DIR.tgz"
-    fetch_untar_file "$SPARK_FILE" "http://mirror.nexcess.net/apache/spark/spark-$SPARK_VERSION/$SPARK_FILE"
+    #SPARK_FILE="$SPARK_DIR.tgz"
+    # fetch_untar_file "$SPARK_FILE" "http://mirror.nexcess.net/apache/spark/spark-$SPARK_VERSION/$SPARK_FILE"
 
   elif [ "START_ZK" = "$OPERATION" ];
   then
@@ -221,7 +221,7 @@ run() {
     sleep 10
   elif [ "START_SPARK_PROCESSING" = "$OPERATION" ];
   then
-    "$SPARK_DIR/bin/spark-submit" --master spark://localhost:7077 --class spark.benchmark.KafkaRedisAdvertisingStream ./spark-benchmarks/target/spark-benchmarks-0.1.0.jar "$CONF_FILE" &
+    "$SPARK_DIR/bin/spark-submit" --master spark://172.28.128.5:7077 --class spark.benchmark.KafkaRedisAdvertisingStream ./spark-benchmarks/target/spark-benchmarks-0.1.0.jar "$CONF_FILE" &
     sleep 5
   elif [ "STOP_SPARK_PROCESSING" = "$OPERATION" ];
   then
@@ -260,13 +260,13 @@ run() {
     run "START_ZK"
     run "START_REDIS"
     run "START_KAFKA"
-    run "START_FLINK"
+    #run "START_FLINK"
     run "START_FLINK_PROCESSING"
     run "START_LOAD"
     sleep $TEST_TIME
     run "STOP_LOAD"
     run "STOP_FLINK_PROCESSING"
-    run "STOP_FLINK"
+    #run "STOP_FLINK"
     run "STOP_KAFKA"
     run "STOP_REDIS"
     run "STOP_ZK"
@@ -275,13 +275,13 @@ run() {
     run "START_ZK"
     run "START_REDIS"
     run "START_KAFKA"
-    run "START_SPARK"
+   # run "START_SPARK"
     run "START_SPARK_PROCESSING"
     run "START_LOAD"
     sleep $TEST_TIME
     run "STOP_LOAD"
     run "STOP_SPARK_PROCESSING"
-    run "STOP_SPARK"
+    #run "STOP_SPARK"
     run "STOP_KAFKA"
     run "STOP_REDIS"
     run "STOP_ZK"
